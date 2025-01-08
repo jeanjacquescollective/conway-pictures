@@ -1,228 +1,168 @@
-// Code goes here
 let c, ctx, stop = true, aliveOption = 'fourth';
 let maxPixels = 320;
+
 document.addEventListener("DOMContentLoaded", function() {
   c = document.getElementById('canvas');
   ctx = c.getContext('2d');
 
-  c.onclick = function(){
+  c.onclick = function() {
     stop = !stop;
     setTimeout(doLife, 30);
-  }
-  let choices = [...document.getElementsByClassName('choice')];
-  let images = [];
+  };
 
-  choices.forEach((item, i) => {
-    images.push(item.firstChild.src);
-    item.onclick = function(){
+  const choices = [...document.getElementsByClassName('choice')];
+  const images = choices.map(item => item.firstChild.src);
+
+  choices.forEach((item) => {
+    item.onclick = function() {
       stop = true;
       scaleCanvas(item.firstChild, ctx);
       drawImageScaled(item.firstChild, ctx);
-    }
+    };
   });
 
-
   shuffle(images);
-  let optionsContainer = document.getElementById('images-options');
+  const optionsContainer = document.getElementById('images-options');
 
-
-  let customImg = new Image();
-  customImg.crossOrigin = "Anonymous";
-  customImg.onload = function(){
+  const customImg = new Image();
+  customImg.crossOrigin = "anonymous";
+  customImg.onload = function() {
     stop = true;
-
-    let size = Math.min(this.width, this.height);
     scaleCanvas(customImg, ctx);
     drawImageScaled(customImg, ctx);
-    //ctx.drawImage(customImg, (this.width-size)/2, (this.height-size)/2, size, size, 0, 0, 320, 320);
     customImg.src = '';
-    setTimeout(function() {
+    setTimeout(() => {
       stop = false;
       doLife();
     }, 500);
-  }
+  };
 
-  customImg.onerror = function(){
-    if(window.location.href != this.src)
+  customImg.onerror = function() {
+    if (window.location.href !== this.src) {
       alert('Could not load image. Please try another one.');
-  }
+    }
+  };
 
-  let custom = document.getElementById('custom');
-  let button = document.getElementById('custom-button');
-  button.onclick = function(e){
-    customImg.src = custom.value;
-  }
+  const custom = document.getElementById('custom-url');
+  const button = document.getElementById('custom-button');
+  button.onclick = function() {
+    customImg.src = '' + custom.value;
+  };
 
   updateOptions();
 
-  function addOptionClickHandler(o){
-    o.onclick = function(){
-      aliveOption = o.id;
-      updateOptions();
-    }
-  }
-  let options = document.getElementsByClassName('alive-option');
-  for(let i=0; i<options.length; i++){
+  const options = document.getElementsByClassName('alive-option');
+  for (let i = 0; i < options.length; i++) {
     addOptionClickHandler(options[i]);
+  }
+
+  function addOptionClickHandler(option) {
+    option.onclick = function() {
+      aliveOption = option.id;
+      updateOptions();
+    };
   }
 });
 
-
 function drawImageScaled(img, ctx) {
-   var canvas = ctx.canvas ;
-   // canvas.width =  img.naturalWidth ;
-   // canvas.height =  img.naturalHeight ;
-   var hRatio = canvas.width  / img.naturalWidth    ;
-   var vRatio =  canvas.height / img.naturalHeight  ;
-   var ratio  = Math.min ( hRatio, vRatio );
-   var centerShift_x = ( canvas.width - img.naturalWidth*ratio ) / 2;
-   var centerShift_y = ( canvas.height - img.naturalHeight*ratio ) / 2;
-   ctx.clearRect(0,0,canvas.width, canvas.height);
-   ctx.drawImage(img, 0,0, img.naturalWidth, img.naturalHeight, centerShift_x,centerShift_y,img.naturalWidth*ratio, img.naturalHeight*ratio);
-   //ctx.drawImage(img, 0,0);
+  const canvas = ctx.canvas;
+  const hRatio = canvas.width / img.naturalWidth;
+  const vRatio = canvas.height / img.naturalHeight;
+  const ratio = Math.min(hRatio, vRatio);
+  const centerShift_x = (canvas.width - img.naturalWidth * ratio) / 2;
+  const centerShift_y = (canvas.height - img.naturalHeight * ratio) / 2;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight, centerShift_x, centerShift_y, img.naturalWidth * ratio, img.naturalHeight * ratio);
 }
 
 function scaleCanvas(img, ctx) {
-   var canvas = ctx.canvas ;
-   var ratio = img.naturalWidth  / img.naturalHeight;
-   console.log(ratio);
-   let pixels = maxPixels;
+  const canvas = ctx.canvas;
+  const ratio = img.naturalWidth / img.naturalHeight;
+  const pixels = maxPixels;
 
-   if(ratio > 1) {
-     canvas.height = maxPixels;
-     canvas.width = pixels * ratio;
-     console.log(canvas.height);
-     return;
-   }
-   canvas.width = maxPixels;
-   canvas.height = pixels / ratio;
+  if (ratio > 1) {
+    canvas.height = maxPixels;
+    canvas.width = pixels * ratio;
+  } else {
+    canvas.width = maxPixels;
+    canvas.height = pixels / ratio;
+  }
 }
 
-function updateOptions(){
-  let options = document.getElementsByClassName('alive-option');
-  for(let i=0; i<options.length; i++){
-    let o = options[i];
-    if(aliveOption == o.id){
-      o.className = 'alive-option selected'
-    } else {
-      o.className = 'alive-option'
-    }
+function updateOptions() {
+  const options = document.getElementsByClassName('alive-option');
+  for (let i = 0; i < options.length; i++) {
+    const option = options[i];
+    option.className = aliveOption === option.id ? 'alive-option selected' : 'alive-option';
   }
 }
 
 function updateSlider(slideAmount) {
-        maxPixels = 320 * slideAmount / 50;
-        console.log(slideAmount);
-    }
-
-function shuffle(o){
-    for(let j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
-    return o;
-};
-
-function randomColor() {
-  return 'rgba(' + Math.floor(Math.random() * 256) + ',' + Math.floor(Math.random() * 256) + ',' + Math.floor(Math.random() * 256) + ',1)';
+  maxPixels = 320 * slideAmount / 50;
 }
 
-// function fillRandom() {
-//   for (let i = 0; i < 320; i++) {
-//     for (let j = 0; j < 320; j++) {
-//       ctx.fillStyle = randomColor();
-//       ctx.fillRect(i, j, 1, 1);
-//     }
-//   }
-// }
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+function randomColor() {
+  return `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, 1)`;
+}
 
 function doLife() {
-  if(stop) return;
+  if (stop) return;
 
-  // console.log(imageData);
-  let canvas = document.createElement('canvas');
-  // let pixels = 320;
-  // let ratio = ctx.canvas.width / ctx.canvas.height;
-  // let canvasWidth = 320, canvasHeight = 320;
-  // if(ratio > 1){
-  //   canvasHeight = 320 / ratio;
-  // }
-  // else{
-  //   canvasWidth = 320 / ratio;
-  // }
-  let imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-  let newData = canvas.getContext('2d').createImageData(ctx.canvas.width, ctx.canvas.height);
+  const canvas = document.createElement('canvas');
+  const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+  const newData = canvas.getContext('2d').createImageData(ctx.canvas.width, ctx.canvas.height);
+
   for (let x = 0; x < imageData.width; x++) {
     for (let y = 0; y < imageData.height; y++) {
-      let alive = isAlive(x, y, imageData);
-      let aliveNeighbors = numAliveNeighbors(x, y, imageData);
+      const alive = isAlive(x, y, imageData);
+      const aliveNeighbors = numAliveNeighbors(x, y, imageData);
+      let color;
+
       if (alive && (aliveNeighbors < 2 || aliveNeighbors > 3)) {
         color = manCell(x, y, false, imageData);
-      } else if (!alive && aliveNeighbors == 3) {
+      } else if (!alive && aliveNeighbors === 3) {
         color = manCell(x, y, true, imageData);
       } else {
         color = getColor(x, y, imageData);
       }
-      // console.log(color);
+
       setColor(x, y, newData, color);
     }
   }
+
   ctx.putImageData(newData, 0, 0);
-  if(!stop)
-    requestAnimationFrame(doLife);
+  if (!stop) requestAnimationFrame(doLife);
 }
 
-
-let isAliveFns = {};
-
-isAliveFns['red'] = function(x,y,imageData){
-  //red
-  return imageData.data[y * imageData.width * 4 + x * 4 + 0]  > 200;
-};
-
-isAliveFns['green'] = function(x,y,imageData){
-  //blue
-  return imageData.data[y * imageData.width * 4 + x * 4 + 1]  > 200;
-};
-
-isAliveFns['blue'] = function(x,y,imageData){
-  //green
-  return imageData.data[y * imageData.width * 4 + x * 4 + 2]  > 200;
-};
-
-isAliveFns['half'] = function(x,y,imageData){
-  //half
-  let px = y * imageData.width * 4 + x * 4;
-  return (imageData.data[px] + imageData.data[px+1] + imageData.data[px+2]) % 2 == 0;
-};
-
-isAliveFns['third'] = function(x,y,imageData){
-  //third
-  let px = y * imageData.width * 4 + x * 4;
-  return (imageData.data[px] + imageData.data[px+1] + imageData.data[px+2]) % 3 == 0;
-};
-
-isAliveFns['fourth'] = function(x,y,imageData){
-  //fourth
-  let px = y * imageData.width * 4 + x * 4;
-  return (imageData.data[px] + imageData.data[px+1] + imageData.data[px+2]) % 4 == 0;
-};
-
-isAliveFns['eight'] = function(x,y,imageData){
-  //fourth
-  let px = y * imageData.width * 4 + x * 4;
-  return -(imageData.data[px] + imageData.data[px+1] + imageData.data[px+2]) % (Math.floor(Math.random() * 10)+2)   == 0;
+const isAliveFns = {
+  red: (x, y, imageData) => imageData.data[y * imageData.width * 4 + x * 4] > 200,
+  green: (x, y, imageData) => imageData.data[y * imageData.width * 4 + x * 4 + 1] > 200,
+  blue: (x, y, imageData) => imageData.data[y * imageData.width * 4 + x * 4 + 2] > 200,
+  half: (x, y, imageData) => (imageData.data[y * imageData.width * 4 + x * 4] + imageData.data[y * imageData.width * 4 + x * 4 + 1] + imageData.data[y * imageData.width * 4 + x * 4 + 2]) % 2 === 0,
+  third: (x, y, imageData) => (imageData.data[y * imageData.width * 4 + x * 4] + imageData.data[y * imageData.width * 4 + x * 4 + 1] + imageData.data[y * imageData.width * 4 + x * 4 + 2]) % 3 === 0,
+  fourth: (x, y, imageData) => (imageData.data[y * imageData.width * 4 + x * 4] + imageData.data[y * imageData.width * 4 + x * 4 + 1] + imageData.data[y * imageData.width * 4 + x * 4 + 2]) % 4 === 0,
+  eight: (x, y, imageData) => -(imageData.data[y * imageData.width * 4 + x * 4] + imageData.data[y * imageData.width * 4 + x * 4 + 1] + imageData.data[y * imageData.width * 4 + x * 4 + 2]) % (Math.floor(Math.random() * 10) + 2) === 0
 };
 
 function isAlive(x, y, imageData) {
-  let fn = aliveOption || 'red';
-  return isAliveFns[fn](x,y,imageData);
+  return isAliveFns[aliveOption](x, y, imageData);
 }
 
 function numAliveNeighbors(x, y, imageData) {
   let numAlive = 0;
   for (let i = -1; i <= 1; i++) {
     for (let j = -1; j <= 1; j++) {
-      if (j === 0 && i === 0) continue;
-      let newX = x + i;
-      let newY = y + j;
+      if (i === 0 && j === 0) continue;
+      const newX = x + i;
+      const newY = y + j;
       if (newX >= 0 && newY >= 0 && newX < imageData.width && newY < imageData.height && isAlive(newX, newY, imageData)) {
         numAlive++;
       }
@@ -232,43 +172,39 @@ function numAliveNeighbors(x, y, imageData) {
 }
 
 function getColor(x, y, imageData) {
+  const index = y * imageData.width * 4 + x * 4;
   return [
-    imageData.data[y * imageData.width * 4 + x * 4],
-    imageData.data[y * imageData.width * 4 + x * 4 + 1],
-    imageData.data[y * imageData.width * 4 + x * 4 + 2],
-    imageData.data[y * imageData.width * 4 + x * 4 + 3]
+    imageData.data[index],
+    imageData.data[index + 1],
+    imageData.data[index + 2],
+    imageData.data[index + 3]
   ];
 }
 
 function setColor(x, y, imageData, color) {
-  imageData.data[y * imageData.width * 4 + x * 4] = color[0];
-  imageData.data[y * imageData.width * 4 + x * 4 + 1] = color[1];
-  imageData.data[y * imageData.width * 4 + x * 4 + 2] = color[2];
-  imageData.data[y * imageData.width * 4 + x * 4 + 3] = color[3];
+  const index = y * imageData.width * 4 + x * 4;
+  imageData.data[index] = color[0];
+  imageData.data[index + 1] = color[1];
+  imageData.data[index + 2] = color[2];
+  imageData.data[index + 3] = color[3];
 }
 
 function manCell(x, y, alive, imageData) {
-  let colors = [];
+  const colors = [];
   for (let i = -1; i <= 1; i++) {
     for (let j = -1; j <= 1; j++) {
-      if (j === 0 && i === 0) continue;
-      let newX = x + i;
-      let newY = y + j;
+      if (i === 0 && j === 0) continue;
+      const newX = x + i;
+      const newY = y + j;
       if (newX >= 0 && newY >= 0 && newX < imageData.width && newY < imageData.height) {
-        let aliveCheck = isAlive(newX, newY, imageData);
-        if (alive && aliveCheck || !alive && !aliveCheck) {
+        const aliveCheck = isAlive(newX, newY, imageData);
+        if ((alive && aliveCheck) || (!alive && !aliveCheck)) {
           colors.push(getColor(newX, newY, imageData));
         }
       }
     }
   }
-  if (colors.length > 0) {
-    return colors[Math.floor(Math.random() * colors.length) *0];
-  }
-  // console.log('huh...',x,y,alive, isAlive(x,y,imageData));
-  return getColor(x, y, imageData);
-  // return invert(getColor(x, y, imageData));
-  // return [Math.floor(Math.random()*256),Math.floor(Math.random()*256),Math.floor(Math.random()*256),Math.floor(Math.random()*256)];
+  return colors.length > 0 ? colors[Math.floor(Math.random() * colors.length)] : getColor(x, y, imageData);
 }
 
 function invert(color) {
